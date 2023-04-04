@@ -23,12 +23,22 @@ def read_from_container(file_name):
 
 
 def summarise(file_content):
-    openai.api_key = "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"
+    openai.api_key = "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"
+    questions = []
+    questions.append( "What is the summary of the meeting?")
+    questions.append( "What are the pain points of the customer?")
+#     questions.append( "What is the business impact ?")
+    questions.append( "What are the critical events for the customer?")
+    questions.append( "What is the decision criteria mentioned by the customer?")
+
     result_str = ''
-    query_str = "You are a meeting summarizer and you are expected to answer questions we ask you about the meeting."
-    query_str += "In the meeting notes we just shared below \"what is the decision criteria mentioned by the customer?\""
-    for category in ["Situation", "Pain point", "Decision criteria"]:
-        prompt = f"summarise the {category} from the following text. {file_content}"
+    # for category in ["Situation", "Pain point", "Decision criteria"]:
+    for question in questions:
+        # prompt = f"summarise the {category} from the following text. {file_content}"
+        prompt = f"You are a meeting summarizer and you are expected to answer questions we ask you about the meeting."
+        prompt += f"In the meeting notes we just shared below \"{question}\"\n"
+        prompt += f"{file_content}"
+#         print(prompt)
         completions = openai.Completion.create(
             engine="text-davinci-002",
             prompt=prompt,
@@ -39,8 +49,8 @@ def summarise(file_content):
         split_message = message.split(".\"\n")
         if len(split_message) == 2:
             message = split_message[1]
-        to_add = f"{category}: {message}"
-        print(to_add)
+        to_add = f"{question}\n{message}"
+#         print(to_add)
         result_str = result_str + "\n" + to_add
     return result_str
 
