@@ -5,3 +5,4 @@
 openai
 azure-functions
 azure-storage-blob
+simple_salesforce
