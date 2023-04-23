@@ -24,9 +24,8 @@ def read_from_container(file_name: str):
     print(blob_content)
     return blob_content
 
-
 def summarise(file_content: str):
-    openai.api_key = "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"
+    openai.api_key = "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"
     questions = []
     questions.append( "What is the summary of the meeting?")
     questions.append( "What are the pain points of the customer?")
@@ -57,52 +56,6 @@ def summarise(file_content: str):
         result_str = result_str + "\n" + to_add
     return result_str
 
-
-def authenticate_salesforce():
-    print("Authenticating salesforce")
-    client_id = "3MVG9n_HvETGhr3AUbUhMJxrsZMZ1ps2sRIi7PE33If0IPT0cMGGhSHHNqGiD5SIi7QtqioXJsalKj5FDV1e_", # Consumer Key
-    client_secret = "18564E10B97B81B5B1B06E1B112FCA051B29686E022F0B0F3F4BB81E54EEA569", # Consumer Secret
-    username = "shravani.vatti@gmail.com", # The email you use to login
-    password = "Ardizen!2019ZW5Ho5vTJ5wMaS4xV1cJVdH6" # Concat your password and your security token
-
-    params = {
-            "grant_type": "password",
-            "client_id": client_id, # Consumer Key
-            "client_secret": client_secret,  # Consumer Secret
-            "username": username, # The email you use to login
-            "password": password # Concat your password and your security token
-        }
-   
-    r = requests.post("https://login.salesforce.com/services/oauth2/token", params=params)
-        
-    access_token = r.json().get("access_token")
-    instance_url = r.json().get("instance_url")
-
-    instance_data = {
-        "access_token": access_token,
-        "instance_url": instance_url
-    }
-
-    return instance_data
-
-def save_salesforce(return_str: str):
-    instance_data = authenticate_salesforce()
-    sf = Salesforce(instance_url=instance_data[ "instance_url"], session_id=instance_data["access_token"])
-    print("Getting contact")
-    contact = sf.Contact.get_by_custom_id('email', 'abhisekupadhyaya@example.com')
-    today = datetime.date.today()
-    call = {
-        'Subject': 'SPICED Meeting',
-        'WhoId': contact["Id"], # Replace with the ID of the contact you want to associate the call with
-        'ActivityDate': str(today),
-        'Description': return_str,
-        'Status': 'Completed'
-    }
-    print("Saving call")
-    sf.Task.create(call)
-    print("Saved call")
-    return
-
 def main(req: func.HttpRequest) -> func.HttpResponse:
     logging.info('Python HTTP trigger function processed a request.')
 
@@ -124,9 +77,12 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
         return_str += f"Here are the results: \n {summary}"
 
         # save in salesforce
-        save_salesforce(return_str)
+        # save_salesforce(return_str)
 
-        return func.HttpResponse(return_str)
+        return func.HttpResponse(json.dumps({
+                        'transcript': transcript_content,
+                        'summary': summary,
+                        }) )
     else:
         return func.HttpResponse(
              "This HTTP triggered function executed successfully. Pass a transcript in the query string or in the request body for a personalized response.",
